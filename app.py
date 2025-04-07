@@ -3,26 +3,38 @@ import firebase_admin
 import json
 from firebase_admin import credentials, firestore
 
-# Ambil kredensial dari Streamlit Secrets dan strip whitespace
+# Ambil kredensial dari Streamlit Secrets dan hapus whitespace di sekitarnya
 firebase_credentials = st.secrets["firebase"]["credentials"].strip()
+
+# Ganti literal "\\n" menjadi newline sebenarnya "\n"
+firebase_credentials = firebase_credentials.replace("\\n", "\n")
+
+# Debug: Tampilkan sebagian data (misalnya client_email) untuk memastikan parsing berhasil
+# st.write("Client Email:", firebase_credentials)  # Hapus atau komentari jika sudah yakin
+
 try:
+    # Parse string JSON menjadi dict
     cred_data = json.loads(firebase_credentials)
 except json.JSONDecodeError as e:
-    st.error("Gagal parse JSON credentials: " + str(e))
+    st.error("Failed to parse JSON credentials: " + str(e))
     st.stop()
 
 try:
+    # Inisialisasi kredensial dengan data yang sudah diparsing
     cred = credentials.Certificate(cred_data)
-except ValueError as e:
+except Exception as e:
     st.error("Failed to initialize certificate credential: " + str(e))
     st.stop()
 
+# Inisialisasi Firebase App jika belum ada
 if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
 
+# Akses ke Firestore
 db = firestore.client()
 collection = db.collection("pengunjung")
 
+st.write("Firebase dan Firestore berhasil diinisialisasi!")
 
 # Sidebar untuk navigasi antar halaman
 page = st.sidebar.selectbox("Pilih Halaman", ["Input Data", "Tampilkan Data"])
