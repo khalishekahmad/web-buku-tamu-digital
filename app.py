@@ -1,11 +1,15 @@
 import streamlit as st
 import firebase_admin
 import pandas as pd
+import json
 from firebase_admin import credentials, firestore
 
-# Setup koneksi ke Firebase
+# Setup koneksi ke Firebase menggunakan kredensial dari Streamlit Secrets
 if not firebase_admin._apps:
-    cred = credentials.Certificate("buku-tamu-web-firebase-adminsdk-fbsvc-44b290c091.json")
+    # Ambil kredensial JSON dari secrets (pastikan sudah ditambahkan di panel Secrets dengan format TOML)
+    firebase_credentials = st.secrets["firebase"]["credentials"]
+    cred_data = json.loads(firebase_credentials)
+    cred = credentials.Certificate(cred_data)
     firebase_admin.initialize_app(cred)
 
 # Akses ke Firestore
