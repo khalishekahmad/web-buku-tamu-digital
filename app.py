@@ -1,26 +1,28 @@
 import streamlit as st
 import firebase_admin
-import pandas as pd
 import json
 from firebase_admin import credentials, firestore
 
-# Setup koneksi ke Firebase menggunakan kredensial dari Streamlit Secrets
-if not firebase_admin._apps:
-    # Ambil kredensial JSON dari secrets (pastikan sudah ditambahkan di panel Secrets dengan format TOML)
-    firebase_credentials = st.secrets["firebase"]["credentials"]
-    # Hapus spasi di awal dan akhir string
-    firebase_credentials = firebase_credentials.strip()
-    try:
-        cred_data = json.loads(firebase_credentials)
-    except json.JSONDecodeError as e:
-        st.error("Gagal parse JSON credentials: " + str(e))
-        st.stop()
+# Ambil kredensial dari Streamlit Secrets dan strip whitespace
+firebase_credentials = st.secrets["firebase"]["credentials"].strip()
+try:
+    cred_data = json.loads(firebase_credentials)
+except json.JSONDecodeError as e:
+    st.error("Gagal parse JSON credentials: " + str(e))
+    st.stop()
+
+try:
     cred = credentials.Certificate(cred_data)
+except ValueError as e:
+    st.error("Failed to initialize certificate credential: " + str(e))
+    st.stop()
+
+if not firebase_admin._apps:
     firebase_admin.initialize_app(cred)
 
-# Akses ke Firestore
 db = firestore.client()
 collection = db.collection("pengunjung")
+
 
 # Sidebar untuk navigasi antar halaman
 page = st.sidebar.selectbox("Pilih Halaman", ["Input Data", "Tampilkan Data"])
