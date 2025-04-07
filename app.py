@@ -3,25 +3,31 @@ import firebase_admin
 import json
 from firebase_admin import credentials, firestore
 
-# Ambil kredensial dari Streamlit Secrets dan hapus spasi di sekitarnya
+# Ambil kredensial dari Streamlit Secrets dan hapus whitespace di sekitarnya
 firebase_credentials = st.secrets["firebase"]["credentials"].strip()
 
-# Ubah literal newline menjadi sequence "\n" (dua karakter)
-firebase_credentials = firebase_credentials.replace("\n", "\\n")
-
-# Debug: Tampilkan string yang sudah diproses
-st.write("DEBUG processed credentials:", repr(firebase_credentials))
-
+# Dekode escape sequences menggunakan unicode_escape
 try:
-    cred_data = json.loads(firebase_credentials)
-except json.JSONDecodeError as e:
-    st.error("Failed to parse JSON credentials: " + str(e))
+    decoded_credentials = firebase_credentials.encode("utf-8").decode("unicode_escape")
+except Exception as e:
+    st.error("Gagal mendecode credentials: " + str(e))
     st.stop()
 
+# Debug: Tampilkan string setelah decoding (untuk troubleshooting, hapus jika sudah benar)
+st.write("DEBUG processed credentials:", repr(decoded_credentials))
+
+# Coba parsing JSON
+try:
+    cred_data = json.loads(decoded_credentials)
+except json.JSONDecodeError as e:
+    st.error("Gagal parse JSON credentials: " + str(e))
+    st.stop()
+
+# Inisialisasi kredensial Firebase
 try:
     cred = credentials.Certificate(cred_data)
 except Exception as e:
-    st.error("Failed to initialize certificate credential: " + str(e))
+    st.error("Gagal inisialisasi certificate credential: " + str(e))
     st.stop()
 
 if not firebase_admin._apps:
