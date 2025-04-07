@@ -8,7 +8,13 @@ from firebase_admin import credentials, firestore
 if not firebase_admin._apps:
     # Ambil kredensial JSON dari secrets (pastikan sudah ditambahkan di panel Secrets dengan format TOML)
     firebase_credentials = st.secrets["firebase"]["credentials"]
-    cred_data = json.loads(firebase_credentials)
+    # Hapus spasi di awal dan akhir string
+    firebase_credentials = firebase_credentials.strip()
+    try:
+        cred_data = json.loads(firebase_credentials)
+    except json.JSONDecodeError as e:
+        st.error("Gagal parse JSON credentials: " + str(e))
+        st.stop()
     cred = credentials.Certificate(cred_data)
     firebase_admin.initialize_app(cred)
 
