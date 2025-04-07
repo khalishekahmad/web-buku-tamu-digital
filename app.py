@@ -3,17 +3,14 @@ import firebase_admin
 import json
 from firebase_admin import credentials, firestore
 
-# Ambil kredensial dari Streamlit Secrets dan hapus whitespace di sekitarnya
+# Ambil kredensial dari Streamlit Secrets dan hapus spasi di sekitarnya
 firebase_credentials = st.secrets["firebase"]["credentials"].strip()
 
-# Debug: Tampilkan string awal
-st.write("DEBUG (awal):", repr(firebase_credentials))
+# Ubah literal newline menjadi sequence "\n" (dua karakter)
+firebase_credentials = firebase_credentials.replace("\n", "\\n")
 
-# Dekode escape sequences menggunakan unicode_escape
-firebase_credentials = firebase_credentials.encode("utf-8").decode("unicode_escape")
-
-# Debug: Tampilkan string setelah decoding
-st.write("DEBUG (after unicode_escape):", repr(firebase_credentials))
+# Debug: Tampilkan string yang sudah diproses
+st.write("DEBUG processed credentials:", repr(firebase_credentials))
 
 try:
     cred_data = json.loads(firebase_credentials)
@@ -33,7 +30,7 @@ if not firebase_admin._apps:
 db = firestore.client()
 collection = db.collection("pengunjung")
 
-st.write("Firebase dan Firestore berhasil diinisialisasi!")
+st.write("Firebase and Firestore initialized successfully!")
 
 # Sidebar untuk navigasi antar halaman
 page = st.sidebar.selectbox("Pilih Halaman", ["Input Data", "Tampilkan Data"])
