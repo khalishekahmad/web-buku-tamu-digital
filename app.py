@@ -6,8 +6,14 @@ from firebase_admin import credentials, firestore
 # Ambil kredensial dari Streamlit Secrets dan hapus whitespace di sekitarnya
 firebase_credentials = st.secrets["firebase"]["credentials"].strip()
 
-# Tambahkan baris debugging untuk melihat isi string credentials
-st.write("DEBUG credentials:", repr(firebase_credentials))
+# Debug: Tampilkan string awal
+st.write("DEBUG (awal):", repr(firebase_credentials))
+
+# Dekode escape sequences menggunakan unicode_escape
+firebase_credentials = firebase_credentials.encode("utf-8").decode("unicode_escape")
+
+# Debug: Tampilkan string setelah decoding
+st.write("DEBUG (after unicode_escape):", repr(firebase_credentials))
 
 try:
     cred_data = json.loads(firebase_credentials)
